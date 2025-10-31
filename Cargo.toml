@@ -1,0 +1,22 @@
+
+[package]
+authors = ["Minteea <minteea@qq.com>"]
+edition = "2021"
+name    = "remu-audio-napi"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi        = { version = "3.0.0", features = ["async"] }
+napi-derive = "3.0.0"
+remu-audio  = { path = "../remu-audio" }
+rodio = "0.21.1"
+
+[build-dependencies]
+napi-build = "2"
+
+[profile.release]
+lto   = true
+strip = "symbols"
