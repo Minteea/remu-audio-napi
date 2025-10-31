@@ -2,6 +2,8 @@
 
 > Node.js bindings for remu-audio - A Rust audio playback library based on Rodio, supporting local and network audio playback.
 
+English | [简体中文](./README.zh-CN.md)
+
 # Features
 
 - 🎵 Play local audio files
@@ -29,15 +31,20 @@ import { Player } from '@remuplay/remu-audio'
 const player = new Player()
 
 // Set up event listeners
-player.setCallback((event) => {
-  console.log('Event:', event.eventType)
-  if (event.message) {
-    console.log('Message:', event.message)
-  }
+player.addEventListener('play', () => {
+  console.log('Playback started')
+})
+
+player.addEventListener('ended', () => {
+  console.log('Playback finished')
+})
+
+player.addEventListener('error', (event) => {
+  console.error('Error:', event.detail?.message)
 })
 
 // Load and play audio
-await player.loadFile('./audio.mp3')
+await player.load('./audio.mp3')
 player.play()
 
 // Control playback
@@ -52,6 +59,8 @@ player.stop() // Stop and clear resources
 
 ### Player Class
 
+The `Player` class extends `EventTarget`, providing a familiar event-driven API for audio playback control.
+
 #### Constructor
 
 ```typescript
@@ -62,9 +71,9 @@ Creates a new audio player instance.
 
 #### Methods
 
-##### `play(): void`
+##### `play(): Promise<void>`
 
-Start or resume audio playback.
+Start or resume audio playback. Returns a promise that resolves when playback starts.
 
 ##### `pause(): void`
 
@@ -76,67 +85,101 @@ Stop playback and clear all loaded resources.
 
 ##### `seek(position: number): void`
 
-Seek to a specific position in seconds.
+Seek to a specific position in seconds. Automatically clamps to valid range [0, duration].
 
 ##### `setVolume(volume: number): void`
 
-Set the playback volume (0.0 to 1.0).
+Set the playback volume (0.0 to 1.0). Automatically clamps to valid range and unmutes if volume > 0.
 
-##### `loadFile(filePath: string): Promise<void>`
+##### `setMuted(muted: boolean): void`
 
-Load a local audio file. Supports formats: WAV, MP3, FLAC, OGG, etc.
+Mute or unmute audio playback.
 
-##### `loadUrl(url: string): Promise<void>`
+##### `load(src: string): Promise<void>`
 
-Load and stream audio from a URL.
+Load an audio file or stream. Automatically detects the source type:
 
-##### `setCallback(callback: (event: PlayerEventData) => void): void`
+- Local file: `./audio.mp3` or `/path/to/audio.mp3`
+- Network stream: `http://...` or `https://...`
 
-Set a callback function to receive player events.
+Supports formats: WAV, MP3, FLAC, OGG, etc.
 
-**Player Events:**
+##### `dispose(): void`
+
+Release all player resources, stop playback, and clean up timers and listeners. The player cannot be used after calling this method.
+
+##### `addEventListener(type: string, listener: EventListener): void`
+
+Register an event listener for player events. Inherited from `EventTarget`.
+
+#### Events
+
+The player emits the following events that can be listened to using `addEventListener()`:
+
+**Playback Control Events:**
 
 - `play` - Playback started or resumed
 - `pause` - Playback paused
-- `waiting` - Buffering/waiting for data
 - `playing` - Playing with sufficient data
-- `ended` - Playback ended
+- `waiting` - Buffering/waiting for data
+- `ended` - Playback finished
 - `emptied` - Player resources cleared
+
+**Loading Events:**
+
+- `loadstart` - Loading started
+- `loadeddata` - Data loaded and ready to play
+- `loadedmetadata` - Metadata (duration, etc.) loaded
+- `completed` - Network stream download completed
+- `aborted` - Network stream download aborted
+
+**Progress Events:**
+
+- `timeupdate` - Current playback position updated (fires ~every 200ms during playback)
 - `durationchange` - Duration changed
-- `volumechange` - Volume changed
+
+**Seek Events:**
+
 - `seeking` - Seek operation started
 - `seeked` - Seek operation completed
-- `loadstart` - Loading started
-- `loadeddata` - Data loaded
-- `loadedmetadata` - Metadata loaded
-- `error` - Error occurred (includes message field)
 
-##### `setLoaderCallback(callback: (event: LoaderEventData) => void): void`
+**Volume Events:**
 
-Set a callback function to receive loader events (for network streaming).
+- `volumechange` - Volume or muted state changed
 
-**Loader Events:**
+**Error Events:**
 
-- `completed` - Download completed
-- `aborted` - Download aborted
+- `error` - Error occurred (event.detail.message contains error details)
 
 #### Properties
+
+##### `src: string` (getter)
+
+Get the current audio source path or URL.
+
+##### `currentTime: number` (getter)
+
+Get the current playback position in seconds.
+
+##### `duration: number` (getter)
+
+Get the total duration in seconds. Returns `NaN` if duration is unknown.
 
 ##### `volume: number` (getter)
 
 Get the current volume (0.0 to 1.0).
 
+##### `muted: boolean` (getter)
+
+Check if audio is muted.
+
 ##### `paused: boolean` (getter)
 
 Check if playback is paused.
 
-##### `position: number` (getter)
+##### `ended: boolean` (getter)
 
-Get the current playback position in seconds.
-
-##### `duration: number | undefined` (getter)
-
-Get the total duration in seconds, or undefined if unknown.
+Check if playback has ended.
 
 ## Examples
 
@@ -146,8 +189,8 @@ Get the total duration in seconds, or undefined if unknown.
 import { Player } from '@remuplay/remu-audio'
 
 const player = new Player()
-await player.loadFile('./music.mp3')
-player.play()
+await player.load('./music.mp3')
+await player.play()
 ```
 
 ### Stream from URL
@@ -158,12 +201,16 @@ import { Player } from '@remuplay/remu-audio'
 const player = new Player()
 
 // Monitor loader events
-player.setLoaderCallback((event) => {
-  console.log('Loader event:', event.eventType)
+player.addEventListener('loadstart', () => {
+  console.log('Loading started')
 })
 
-await player.loadUrl('https://example.com/audio.mp3')
-player.play()
+player.addEventListener('completed', () => {
+  console.log('Download completed')
+})
+
+await player.load('https://example.com/audio.mp3')
+await player.play()
 ```
 
 ### Monitor Playback Events
@@ -173,25 +220,87 @@ import { Player } from '@remuplay/remu-audio'
 
 const player = new Player()
 
-player.setCallback((event) => {
-  switch (event.eventType) {
-    case 'play':
-      console.log('Playback started')
-      break
-    case 'pause':
-      console.log('Playback paused')
-      break
-    case 'ended':
-      console.log('Playback finished')
-      break
-    case 'error':
-      console.error('Error:', event.message)
-      break
-  }
+player.addEventListener('play', () => {
+  console.log('Playback started')
 })
 
-await player.loadFile('./audio.mp3')
-player.play()
+player.addEventListener('pause', () => {
+  console.log('Playback paused')
+})
+
+player.addEventListener('ended', () => {
+  console.log('Playback finished')
+})
+
+player.addEventListener('error', (event) => {
+  console.error('Error:', event.detail?.message)
+})
+
+await player.load('./audio.mp3')
+await player.play()
+```
+
+### Track Playback Progress
+
+```javascript
+import { Player } from '@remuplay/remu-audio'
+
+const player = new Player()
+
+player.addEventListener('timeupdate', () => {
+  console.log(`Progress: ${player.currentTime.toFixed(2)}s / ${player.duration.toFixed(2)}s`)
+})
+
+player.addEventListener('durationchange', () => {
+  console.log(`Duration: ${player.duration.toFixed(2)}s`)
+})
+
+await player.load('./audio.mp3')
+await player.play()
+```
+
+### Advanced: Complete Control
+
+```javascript
+import { Player } from '@remuplay/remu-audio'
+
+const player = new Player()
+
+// Setup event listeners
+player.addEventListener('loadedmetadata', () => {
+  console.log(`Duration: ${player.duration}s`)
+})
+
+player.addEventListener('ended', () => {
+  console.log('Playback finished')
+  player.dispose() // Clean up resources
+})
+
+// Load and play
+await player.load('./audio.mp3')
+await player.play()
+
+// Wait 5 seconds, then seek to 10s
+setTimeout(() => {
+  player.seek(10)
+}, 5000)
+
+// Adjust volume
+player.setVolume(0.5)
+
+// Mute/unmute
+player.setMuted(true)
+setTimeout(() => player.setMuted(false), 2000)
+
+// Check status
+console.log({
+  currentTime: player.currentTime,
+  duration: player.duration,
+  volume: player.volume,
+  muted: player.muted,
+  paused: player.paused,
+  ended: player.ended,
+})
 ```
 
 ## Development
@@ -262,3 +371,7 @@ git push
 GitHub actions will do the rest job for you.
 
 > WARN: Don't run `npm publish` manually.
+
+## 📃 About README
+
+✨ This README was generated with GitHub Copilot ✨
