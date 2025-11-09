@@ -44,8 +44,8 @@
   "scripts": {
     "artifacts": "napi artifacts",
     "bench": "node --import @oxc-node/core/register benchmark/bench.ts",
-    "build": "tsc && napi build --js binding.cjs --dts binding.d.cts --platform --release",
-    "build:debug": "tsc && napi build --js binding.cjs --dts binding.d.cts --platform",
+    "build": "napi build --js binding.cjs --dts binding.d.cts --platform --release && tsc",
+    "build:debug": "napi build --js binding.cjs --dts binding.d.cts --platform && tsc",
     "format": "run-p format:prettier format:rs format:toml",
     "format:prettier": "prettier . -w",
     "format:toml": "taplo format",
