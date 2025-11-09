@@ -1,6 +1,6 @@
 {
   "name": "@remuplay/remu-audio",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.0",
   "description": "Template project for writing node package with napi-rs",
   "main": "index.js",
   "type": "module",
@@ -19,9 +19,11 @@
     "node-addon-api"
   ],
   "files": [
-    "index.d.ts",
+    "index.ts",
     "index.js",
-    "browser.js"
+    "binding.cjs",
+    "binding.d.cts",
+    "js/**/*"
   ],
   "napi": {
     "binaryName": "remu-audio",
