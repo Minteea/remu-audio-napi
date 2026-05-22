@@ -117,80 +117,86 @@ impl BindingPlayer {
   #[napi]
   pub fn set_callback(&self, callback: ThreadsafeFunction<JsPlayerEventData>) {
     let callback_arc = Arc::new(callback);
-    let callback_arc2 = callback_arc.clone();
-    self.player.set_callback(move |event| {
-      let event_data = match event {
-        PlayerEvent::Play => JsPlayerEventData {
-          event_type: "play".to_string(),
-          message: None,
-        },
-        PlayerEvent::Pause => JsPlayerEventData {
-          event_type: "pause".to_string(),
-          message: None,
-        },
-        PlayerEvent::Waiting => JsPlayerEventData {
-          event_type: "waiting".to_string(),
-          message: None,
-        },
-        PlayerEvent::Playing => JsPlayerEventData {
-          event_type: "playing".to_string(),
-          message: None,
-        },
-        PlayerEvent::Ended => JsPlayerEventData {
-          event_type: "ended".to_string(),
-          message: None,
-        },
-        PlayerEvent::Emptied => JsPlayerEventData {
-          event_type: "emptied".to_string(),
-          message: None,
-        },
-        PlayerEvent::DurationChange => JsPlayerEventData {
-          event_type: "durationchange".to_string(),
-          message: None,
-        },
-        PlayerEvent::VolumeChange => JsPlayerEventData {
-          event_type: "volumechange".to_string(),
-          message: None,
-        },
-        PlayerEvent::Seeking => JsPlayerEventData {
-          event_type: "seeking".to_string(),
-          message: None,
-        },
-        PlayerEvent::Seeked => JsPlayerEventData {
-          event_type: "seeked".to_string(),
-          message: None,
-        },
-        PlayerEvent::LoadStart => JsPlayerEventData {
-          event_type: "loadstart".to_string(),
-          message: None,
-        },
-        PlayerEvent::LoadedData => JsPlayerEventData {
-          event_type: "loadeddata".to_string(),
-          message: None,
-        },
-        PlayerEvent::LoadedMetadata => JsPlayerEventData {
-          event_type: "loadedmetadata".to_string(),
-          message: None,
-        },
-        PlayerEvent::Error { message } => JsPlayerEventData {
-          event_type: "error".to_string(),
-          message: Some(message),
-        },
-      };
-      callback_arc.call(Ok(event_data), ThreadsafeFunctionCallMode::NonBlocking);
+    self.player.set_callback({
+      let callback = callback_arc.clone();
+      move |event| {
+        let event_data = match event {
+          PlayerEvent::Play => JsPlayerEventData {
+            event_type: "play".to_string(),
+            message: None,
+          },
+          PlayerEvent::Pause => JsPlayerEventData {
+            event_type: "pause".to_string(),
+            message: None,
+          },
+          PlayerEvent::Waiting => JsPlayerEventData {
+            event_type: "waiting".to_string(),
+            message: None,
+          },
+          PlayerEvent::Playing => JsPlayerEventData {
+            event_type: "playing".to_string(),
+            message: None,
+          },
+          PlayerEvent::Ended => JsPlayerEventData {
+            event_type: "ended".to_string(),
+            message: None,
+          },
+          PlayerEvent::Emptied => JsPlayerEventData {
+            event_type: "emptied".to_string(),
+            message: None,
+          },
+          PlayerEvent::DurationChange => JsPlayerEventData {
+            event_type: "durationchange".to_string(),
+            message: None,
+          },
+          PlayerEvent::VolumeChange => JsPlayerEventData {
+            event_type: "volumechange".to_string(),
+            message: None,
+          },
+          PlayerEvent::Seeking => JsPlayerEventData {
+            event_type: "seeking".to_string(),
+            message: None,
+          },
+          PlayerEvent::Seeked => JsPlayerEventData {
+            event_type: "seeked".to_string(),
+            message: None,
+          },
+          PlayerEvent::LoadStart => JsPlayerEventData {
+            event_type: "loadstart".to_string(),
+            message: None,
+          },
+          PlayerEvent::LoadedData => JsPlayerEventData {
+            event_type: "loadeddata".to_string(),
+            message: None,
+          },
+          PlayerEvent::LoadedMetadata => JsPlayerEventData {
+            event_type: "loadedmetadata".to_string(),
+            message: None,
+          },
+          PlayerEvent::Error { message } => JsPlayerEventData {
+            event_type: "error".to_string(),
+            message: Some(message),
+          },
+        };
+        callback.call(Ok(event_data), ThreadsafeFunctionCallMode::NonBlocking);
+      }
     });
-    self.player.set_loader_callback(move |event| {
-      let event_data = match event {
-        LoaderEvent::Completed => JsPlayerEventData {
-          event_type: "completed".to_string(),
-          message: None,
-        },
-        LoaderEvent::Aborted => JsPlayerEventData {
-          event_type: "aborted".to_string(),
-          message: None,
-        },
-      };
-      callback_arc2.call(Ok(event_data), ThreadsafeFunctionCallMode::NonBlocking);
+
+    self.player.set_loader_callback({
+      let callback = callback_arc.clone();
+      move |event| {
+        let event_data = match event {
+          LoaderEvent::Completed => JsPlayerEventData {
+            event_type: "completed".to_string(),
+            message: None,
+          },
+          LoaderEvent::Aborted => JsPlayerEventData {
+            event_type: "aborted".to_string(),
+            message: None,
+          },
+        };
+        callback.call(Ok(event_data), ThreadsafeFunctionCallMode::NonBlocking);
+      }
     });
   }
 }

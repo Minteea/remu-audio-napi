@@ -5,7 +5,8 @@
     "moduleResolution": "Bundler",
     "outDir": "./lib",
     "rootDir": "..",
-    "allowJs": true
+    "allowJs": true,
+    "types": ["node"]
   },
   "include": ["./*.ts"],
   "exclude": ["./lib"]
