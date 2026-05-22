@@ -93,6 +93,12 @@ impl BindingPlayer {
   }
 
   #[napi]
+  /// Load a local file into the player.
+  ///
+  /// # Safety
+  ///
+  /// 调用者必须保证在函数执行期间没有其他线程或 JavaScript 回调并发访问同一 `BindingPlayer` 实例。
+  /// 特别是，在该函数的 `.await` 点之前后，调用者必须保证对 `self` 的独占可变访问，以避免数据竞争或未定义行为。
   pub async unsafe fn load_file(&mut self, file_path: String) -> Result<()> {
     println!("Loading file: {}", file_path);
     self
@@ -105,6 +111,12 @@ impl BindingPlayer {
   }
 
   #[napi]
+  /// Load a remote URL into the player.
+  ///
+  /// # Safety
+  ///
+  /// 调用者必须保证在函数执行期间没有其他线程或 JavaScript 回调并发访问同一 `BindingPlayer` 实例。
+  /// 特别是，在该函数的 `.await` 点之前后，调用者必须保证对 `self` 的独占可变访问，以避免数据竞争或未定义行为。
   pub async unsafe fn load_url(&mut self, url: String) -> Result<()> {
     self
       .player
@@ -209,7 +221,7 @@ pub fn play(file_path: String) {
   let mixer = stream.mixer();
   let file = File::open(file_path).unwrap();
   let source = Decoder::try_from(file).unwrap();
-  let sink = Sink::connect_new(&mixer);
+  let sink = Sink::connect_new(mixer);
   sink.append(source);
   thread::sleep(Duration::from_secs(5));
 }
