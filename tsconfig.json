@@ -8,8 +8,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": ["node"]
   },
-  "include": ["index.ts"],
+  "include": ["."],
   "exclude": ["node_modules", "bench", "__test__"]
 }

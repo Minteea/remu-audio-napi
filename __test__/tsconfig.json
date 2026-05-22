@@ -3,8 +3,9 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "outDir": "lib"
+    "outDir": "lib",
+    "rootDir": "."
   },
-  "include": ["./*.ts", "../index.ts"],
+  "include": ["*.ts"],
   "exclude": ["lib"]
 }
