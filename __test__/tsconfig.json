@@ -3,9 +3,10 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "outDir": "lib",
-    "rootDir": "."
+    "outDir": "./lib",
+    "rootDir": "..",
+    "allowJs": true
   },
-  "include": ["*.ts"],
-  "exclude": ["lib"]
+  "include": ["./*.ts"],
+  "exclude": ["./lib"]
 }

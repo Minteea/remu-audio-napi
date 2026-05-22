@@ -31,6 +31,8 @@ jobs:
         with:
           node-version: 24
           cache: yarn
+      - name: Install ALSA dependencies # Install ALSA dependencies, which are required by remu-audio, on Linux.
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
       - name: Install
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -100,6 +102,9 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
+      - name: Install ALSA dependencies # Install ALSA dependencies, which are required by remu-audio, on Linux.
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+        if: ${{ matrix.settings.host == 'ubuntu-latest' }}
       - name: Install dependencies
         run: yarn install
       - name: Build

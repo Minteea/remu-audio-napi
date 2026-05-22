@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2023",
+    "target": "es2024",
     "strict": true,
     "moduleResolution": "nodenext",
     "module": "nodenext",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "types": ["node"]
+    "allowSyntheticDefaultImports": true
   },
   "include": ["."],
   "exclude": ["node_modules", "bench", "__test__"]
